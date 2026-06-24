@@ -54,8 +54,6 @@ export default function Home() {
               "Smart Home Setup",
               "Computer Assistance",
               "Wi-Fi Troubleshooting",
-              "Flat-Pack Furniture Assembly",
-              "Gutter Cleaning",
               "Pressure Washing",
               "Senior Assistance",
             ].map((service) => (
