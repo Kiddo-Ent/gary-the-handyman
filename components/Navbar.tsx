@@ -33,6 +33,10 @@ return ( <nav className="bg-slate-900 text-white shadow-lg"> <div className="max
           Services
         </Link>
 
+        <Link href="/quote" className="hover:text-orange-400">
+          Quote Request
+        </Link>
+        
         <Link href="/gallery" className="hover:text-orange-400">
           Gallery
         </Link>

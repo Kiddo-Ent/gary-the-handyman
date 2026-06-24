@@ -1,108 +1,47 @@
-"use client";
-
-import { useState } from "react";
-
 export default function ContactPage() {
-  const [status, setStatus] = useState("");
+return ( <main className="min-h-screen py-20 px-6"> <div className="max-w-4xl mx-auto">
 
-  async function handleSubmit(
-    e: React.FormEvent<HTMLFormElement>
-  ) {
-    e.preventDefault();
+    <h1 className="text-5xl font-bold mb-10">
+      Contact Gary
+    </h1>
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    <div className="space-y-6 text-xl">
 
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: formData.get("name"),
-        phone: formData.get("phone"),
-        email: formData.get("email"),
-        service: formData.get("service"),
-        message: formData.get("message"),
-      }),
-    });
+      <p>
+        <strong>Phone:</strong> 0409 709 234
+      </p>
 
-    const data = await response.json();
+      <p>
+        <strong>Email:</strong> garythehandyman26@gmail.com
+      </p>
 
-    if (data.success) {
-      setStatus("Quote request sent successfully!");
-      form.reset();
-    } else {
-      setStatus("Sorry, something went wrong.");
-    }
-  }
+      <p>
+        <strong>Service Areas:</strong>
+      </p>
 
-  return (
-    <main className="min-h-screen py-20 px-6">
-      <div className="max-w-4xl mx-auto">
+      <ul className="list-disc pl-6">
+        <li>Inverloch</li>
+        <li>Wonthaggi</li>
+        <li>Venus Bay</li>
+        <li>Leongatha</li>
+        <li>Korumburra</li>
+        <li>Cape Paterson</li>
+        <li>Foster</li>
+        <li>Fish Creek</li>
+      </ul>
 
-        <h1 className="text-5xl font-bold mb-4">
-          Request a Quote
-        </h1>
-
-        <p className="text-xl mb-10">
-          Need help around the home? Fill out the form below and Gary will get back to you.
-        </p>
-
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
+      <div className="pt-6">
+        <a
+          href="tel:0409709234"
+          className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold"
         >
-          <input
-            name="name"
-            placeholder="Your Name"
-            required
-            className="w-full border p-4 rounded-lg"
-          />
-
-          <input
-            name="phone"
-            placeholder="Phone Number"
-            required
-            className="w-full border p-4 rounded-lg"
-          />
-
-          <input
-            name="email"
-            type="email"
-            placeholder="Email Address"
-            required
-            className="w-full border p-4 rounded-lg"
-          />
-
-          <input
-            name="service"
-            placeholder="Service Required"
-            className="w-full border p-4 rounded-lg"
-          />
-
-          <textarea
-            name="message"
-            placeholder="Tell Gary about your project..."
-            rows={6}
-            className="w-full border p-4 rounded-lg"
-          />
-
-          <button
-            type="submit"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold"
-          >
-            Request Quote
-          </button>
-        </form>
-
-        {status && (
-          <p className="mt-6 font-semibold">
-            {status}
-          </p>
-        )}
-
+          Call Gary Now
+        </a>
       </div>
-    </main>
-  );
+
+    </div>
+
+  </div>
+</main>
+);
 }
