@@ -6,7 +6,7 @@ export default function Home() {
     <main className="min-h-screen bg-white">
       
       {/* Hero Section */}
-      <section className="relative h-[600px]">
+      <section className="relative h-[500px] md:h-[650px]">
   <Image
     src="/images/hero.jpg"
     alt="Gary the Handyman"
@@ -15,27 +15,48 @@ export default function Home() {
     priority
   />
 
-  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-    <div className="text-center text-white px-6">
-      <h1 className="text-5xl md:text-6xl font-bold mb-6">
-        Gary the Handyman
-      </h1>
+  <div className="absolute inset-0 bg-black/50 flex items-center">
+    <div className="max-w-6xl mx-auto w-full px-6">
 
-      <p className="text-xl max-w-3xl mx-auto mb-8">
-        Reliable handyman services, property maintenance,
-        security camera installation and IT support throughout
-        Inverloch and South Gippsland.
-      </p>
+```
+  <div className="max-w-2xl text-left text-white">
+
+    <h1 className="text-4xl md:text-6xl font-bold mb-6">
+      Trusted Handyman Services Across South Gippsland
+    </h1>
+
+    <p className="text-lg md:text-xl mb-8 leading-relaxed">
+      Home repairs, property maintenance, security camera installation,
+      technology support and senior assistance throughout Inverloch
+      and surrounding areas.
+    </p>
+
+    <div className="flex flex-col sm:flex-row gap-4">
 
       <a
         href="tel:0409709234"
-        className="bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-lg font-semibold"
+        className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold text-center"
       >
-        Call Now
+        📞 Call Now
       </a>
+
+      <a
+        href="/quote"
+        className="bg-white text-slate-900 px-8 py-4 rounded-lg font-semibold text-center hover:bg-gray-100"
+      >
+        Request a Free Quote
+      </a>
+
     </div>
+
+  </div>
+
+</div>
+```
+
   </div>
 </section>
+
 
       {/* Services */}
       <section className="py-20 px-6">
