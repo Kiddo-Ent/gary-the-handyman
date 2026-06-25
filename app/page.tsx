@@ -39,6 +39,7 @@ const services = [
 const towns = [
   "Inverloch",
   "Wonthaggi",
+  "San Remo",
   "Venus Bay",
   "Leongatha",
   "Korumburra",
