@@ -62,7 +62,7 @@ export default function Home() {
 
         <div className="absolute inset-0 bg-black/55 flex items-center">
           <div className="max-w-6xl mx-auto px-6 w-full">
-            <div className="max-w-2xl ml-auto text-right text-white">
+            <div className="max-w-2xl text-white">
               <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
                 Helping Homes & Small Businesses Across South Gippsland
               </h1>
