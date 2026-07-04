@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 export default function QuotePage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
-  const searchParams = useSearchParams();
-  const service = searchParams.get("service") ?? "";
-
+  
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -30,7 +27,7 @@ export default function QuotePage() {
         suburb: formData.get("suburb"),
         state: formData.get("state"),
         postcode: formData.get("postcode"),
-        service_required: formData.get("service_required") || service,
+        service_required: formData.get("service_required"),
         description: formData.get("description"),
         preferred_date: formData.get("preferred_date"),
         estimated_budget: formData.get("estimated_budget")
@@ -70,7 +67,7 @@ export default function QuotePage() {
             <option>WA</option><option>TAS</option><option>ACT</option><option>NT</option>
           </select>
           <input name="postcode" required placeholder="Postcode" className="w-full rounded-xl border p-4" />
-          <select name="service_required" defaultValue={service} className="w-full rounded-xl border p-4">
+          <select name="service_required" defaultValue="" className="w-full rounded-xl border p-4">
             <option value="">Select a Service</option>
             <option>Home Maintenance</option>
             <option>Technology & Digital Services</option>
