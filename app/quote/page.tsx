@@ -4,99 +4,89 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function QuotePage() {
+  const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const searchParams = useSearchParams();
-  const serviceKey = searchParams.get("service") || "";
-
-  const services: Record<string,{title:string;intro:string;value:string;placeholder:string;}> = {
-    "home-maintenance":{
-      title:"Request a Home Maintenance Quote",
-      intro:"Tell me about the repairs or maintenance you'd like completed.",
-      value:"Home Maintenance",
-      placeholder:"Describe the work you'd like completed. Include what needs repairing, approximate sizes, materials if known, and whether the work is urgent."
-    },
-    technology:{
-      title:"Request a Technology Quote",
-      intro:"Tell me about your website, computer, Wi-Fi or technology project.",
-      value:"Technology & Digital Services",
-      placeholder:"Tell me about your project. For example: a new website, computer issues, Wi-Fi problems, printer setup, email assistance or business technology requirements."
-    },
-    "security-cameras":{
-      title:"Request a Security Camera Quote",
-      intro:"Tell me about your property and the type of security camera system you're looking for.",
-      value:"Security Camera Installation",
-      placeholder:"Tell me about your property. How many cameras are you considering? Which areas would you like monitored? Do you already own cameras or would you like recommendations?"
-    },
-    "social-support":{
-      title:"Request Social Support",
-      intro:"Tell me how I can help you or your family.",
-      value:"Social Support",
-      placeholder:"Tell me a little about the support you're looking for. For example: transport, shopping assistance, technology help, companionship or general day-to-day support."
-    }
-  };
-
-  const current = services[serviceKey] || {
-    title:"Request a Free Quote",
-    intro:"Tell me a little about your project and I'll get back to you as soon as possible with a free, no-obligation quote.",
-    value:"",
-    placeholder:"Please tell me about your project. The more information you provide, the easier it will be for me to prepare an accurate quote."
-  };
+  const service = searchParams.get("service") ?? "";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form=e.currentTarget;
-    const formData=new FormData(form);
-    const response=await fetch("/api/contact",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        name:formData.get("name"),
-        phone:formData.get("phone"),
-        email:formData.get("email"),
-        service:formData.get("service"),
-        message:formData.get("message"),
-      }),
+    setLoading(true);
+    setStatus("");
+
+    const formData = new FormData(e.currentTarget);
+
+    const response = await fetch("/api/contact/quote-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        first_name: formData.get("first_name"),
+        last_name: formData.get("last_name"),
+        company_name: formData.get("company_name"),
+        mobile_phone: formData.get("mobile_phone"),
+        email: formData.get("email"),
+        address_line_1: formData.get("address_line_1"),
+        address_line_2: formData.get("address_line_2"),
+        suburb: formData.get("suburb"),
+        state: formData.get("state"),
+        postcode: formData.get("postcode"),
+        service_required: formData.get("service_required") || service,
+        description: formData.get("description"),
+        preferred_date: formData.get("preferred_date"),
+        estimated_budget: formData.get("estimated_budget")
+      })
     });
-    const data=await response.json();
-    if(data.success){window.location.href="/quote-success";}
-    else{setStatus("Sorry, something went wrong. Please try again.");}
+
+    const result = await response.json();
+
+    if (result.success) {
+      window.location.href = "/quote-success";
+      return;
+    }
+
+    setLoading(false);
+    setStatus(result.message || "Unable to submit quote request.");
   }
 
   return (
-    <main className="min-h-screen py-20 px-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-5xl font-bold mb-4">{current.title}</h1>
-        <p className="text-xl mb-10">{current.intro}</p>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input name="name" placeholder="Your Name" required className="w-full border p-4 rounded-lg"/>
-          <input name="phone" placeholder="Phone Number" required className="w-full border p-4 rounded-lg"/>
-          <input name="email" type="email" placeholder="Email Address" required className="w-full border p-4 rounded-lg"/>
+    <main className="min-h-screen bg-slate-50 py-16 px-6">
+      <div className="mx-auto max-w-5xl rounded-3xl bg-white p-10 shadow-xl">
+        <h1 className="text-4xl font-bold">Request a Free Quote</h1>
+        <p className="mt-3 text-slate-600">
+          Complete the form below and Gary will contact you as soon as possible.
+        </p>
 
-          {current.value ? (
-            <>
-              <label className="block font-semibold text-gray-700">Service Requested</label>
-              <input type="text" value={current.value} readOnly className="w-full border p-4 rounded-lg bg-gray-100"/>
-              <input type="hidden" name="service" value={current.value}/>
-            </>
-          ) : (
-            <select name="service" required className="w-full border p-4 rounded-lg">
-              <option value="">Select a Service</option>
-              <option>Home Maintenance</option>
-              <option>Technology & Digital Services</option>
-              <option>Security Camera Installation</option>
-              <option>Social Support</option>
-              <option>Other</option>
-            </select>
-          )}
-
-          <textarea name="message" placeholder={current.placeholder} rows={8} required className="w-full border p-4 rounded-lg"/>
-
-          <button type="submit" className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold">
-            Request Quote
+        <form onSubmit={handleSubmit} className="mt-10 space-y-8">
+          <input name="first_name" required placeholder="First Name" className="w-full rounded-xl border p-4" />
+          <input name="last_name" required placeholder="Last Name" className="w-full rounded-xl border p-4" />
+          <input name="company_name" placeholder="Company (Optional)" className="w-full rounded-xl border p-4" />
+          <input name="mobile_phone" required placeholder="Mobile Phone" className="w-full rounded-xl border p-4" />
+          <input name="email" type="email" required placeholder="Email" className="w-full rounded-xl border p-4" />
+          <input name="address_line_1" required placeholder="Street Address" className="w-full rounded-xl border p-4" />
+          <input name="address_line_2" placeholder="Address Line 2" className="w-full rounded-xl border p-4" />
+          <input name="suburb" required placeholder="Suburb" className="w-full rounded-xl border p-4" />
+          <select name="state" defaultValue="VIC" className="w-full rounded-xl border p-4">
+            <option>VIC</option><option>NSW</option><option>QLD</option><option>SA</option>
+            <option>WA</option><option>TAS</option><option>ACT</option><option>NT</option>
+          </select>
+          <input name="postcode" required placeholder="Postcode" className="w-full rounded-xl border p-4" />
+          <select name="service_required" defaultValue={service} className="w-full rounded-xl border p-4">
+            <option value="">Select a Service</option>
+            <option>Home Maintenance</option>
+            <option>Technology & Digital Services</option>
+            <option>Security Camera Installation</option>
+            <option>Social Support</option>
+            <option>Other</option>
+          </select>
+          <textarea name="description" rows={8} required placeholder="Describe your project..." className="w-full rounded-xl border p-4" />
+          <input type="date" name="preferred_date" className="w-full rounded-xl border p-4" />
+          <input type="number" name="estimated_budget" placeholder="Estimated Budget" className="w-full rounded-xl border p-4" />
+          <label><input type="checkbox" required /> I agree to the Privacy Policy.</label>
+          <button type="submit" disabled={loading} className="rounded-xl bg-orange-500 px-8 py-4 font-semibold text-white">
+            {loading ? "Submitting..." : "Request My Free Quote"}
           </button>
+          {status && <p>{status}</p>}
         </form>
-
-        {status && <p className="mt-6 text-red-600 font-semibold">{status}</p>}
       </div>
     </main>
   );
