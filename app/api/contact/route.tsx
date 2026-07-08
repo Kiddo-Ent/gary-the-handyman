@@ -10,28 +10,47 @@ export async function POST(request: Request) {
 
     const form = await request.formData();
 
+    // ======================================
+    // Form Data
+    // ======================================
+
     const name = form.get("name")?.toString().trim() ?? "";
     const phone = form.get("phone")?.toString().trim() ?? "";
     const email = form.get("email")?.toString().trim() ?? "";
+
     const address = form.get("address")?.toString().trim() ?? "";
+    const suburb = form.get("suburb")?.toString().trim() ?? "";
+    const state = form.get("state")?.toString().trim() ?? "VIC";
+    const postcode = form.get("postcode")?.toString().trim() ?? "";
+
     const service = form.get("service")?.toString().trim() ?? "";
     const message = form.get("message")?.toString().trim() ?? "";
+
     const contactMethod =
       form.get("contactMethod")?.toString().trim() ??
       "Phone";
+
     const inspection =
       form.get("inspection")?.toString().trim() ??
       "";
 
-    //
-    // Basic validation
-    //
+    // ======================================
+    // Validation
+    // ======================================
 
-    if (!name || !phone || !email || !service || !message) {
+    if (
+      !name ||
+      !phone ||
+      !email ||
+      !address ||
+      !suburb ||
+      !service ||
+      !message
+    ) {
       return Response.json(
         {
           success: false,
-          message: "Missing required fields.",
+          message: "Please complete all required fields.",
         },
         {
           status: 400,
@@ -39,33 +58,37 @@ export async function POST(request: Request) {
       );
     }
 
-    //
-    // STEP 1
+    // ======================================
     // Customer
-    //
+    // ======================================
 
     const customer =
       await findOrCreateCustomer({
         name,
         phone,
         email,
+        address,
+        suburb,
+        state,
+        postcode,
       });
 
-    //
-    // STEP 2
+    // ======================================
     // Property
-    //
+    // ======================================
 
     const property =
       await findOrCreateProperty({
         customerId: customer.id,
         address,
+        suburb,
+        state,
+        postcode,
       });
 
-    //
-    // STEP 3
+    // ======================================
     // Opportunity
-    //
+    // ======================================
 
     const opportunity =
       await createOpportunity({
@@ -81,13 +104,12 @@ export async function POST(request: Request) {
       });
 
     console.log(
-      `Website Opportunity Created: ${opportunity.opportunity_number}`
+      `Website Opportunity #${opportunity.opportunity_number} created successfully.`
     );
 
-    //
-    // STEP 4
-    // Send email
-    //
+    // ======================================
+    // Email
+    // ======================================
 
     await resend.emails.send({
       from:
@@ -107,12 +129,14 @@ New Website Quote Request
 </h1>
 
 <p>
-A new enquiry has been received and automatically added to ToolBox.
+A new quote request has been submitted through
+<strong>garythehandyman.com.au</strong>
+and has automatically been entered into ToolBox.
 </p>
 
 <hr>
 
-<h2>Customer</h2>
+<h2>Customer Details</h2>
 
 <table cellpadding="8">
 
@@ -132,15 +156,30 @@ A new enquiry has been received and automatically added to ToolBox.
 </tr>
 
 <tr>
-<td><strong>Address</strong></td>
-<td>${address || "Not supplied"}</td>
+<td><strong>Street Address</strong></td>
+<td>${address}</td>
+</tr>
+
+<tr>
+<td><strong>Suburb</strong></td>
+<td>${suburb}</td>
+</tr>
+
+<tr>
+<td><strong>State</strong></td>
+<td>${state}</td>
+</tr>
+
+<tr>
+<td><strong>Postcode</strong></td>
+<td>${postcode}</td>
 </tr>
 
 </table>
 
 <hr>
 
-<h2>Job Requested</h2>
+<h2>Requested Service</h2>
 
 <table cellpadding="8">
 
@@ -155,20 +194,22 @@ A new enquiry has been received and automatically added to ToolBox.
 </tr>
 
 <tr>
-<td><strong>Inspection</strong></td>
+<td><strong>Preferred Inspection</strong></td>
 <td>${inspection}</td>
 </tr>
 
 </table>
 
-<h2>Description</h2>
+<h2>Job Description</h2>
 
-<div style="
+<div
+style="
 background:#f5f5f5;
 padding:20px;
 border-radius:8px;
 white-space:pre-wrap;
-">
+"
+>
 ${message}
 </div>
 
@@ -189,9 +230,9 @@ garythehandyman.com.au
 `,
     });
 
-    //
+    // ======================================
     // Success
-    //
+    // ======================================
 
     return Response.json({
       success: true,

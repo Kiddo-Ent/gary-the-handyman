@@ -15,26 +15,6 @@ interface WebsiteOpportunity {
 export async function createOpportunity(
   opportunity: WebsiteOpportunity
 ) {
-  //
-  // Determine next opportunity number
-  //
-
-  const { data: lastOpportunity } = await supabaseAdmin
-    .from("opportunities")
-    .select("opportunity_number")
-    .order("opportunity_number", {
-      ascending: false,
-    })
-    .limit(1)
-    .maybeSingle();
-
-  const nextOpportunityNumber =
-    (lastOpportunity?.opportunity_number ?? 0) + 1;
-
-  //
-  // Build description
-  //
-
   const description = `Website Quote Request
 
 Customer:
@@ -56,15 +36,9 @@ ${opportunity.inspection}
 
 ${opportunity.message}`;
 
-  //
-  // Create Opportunity
-  //
-
   const { data, error } = await supabaseAdmin
     .from("opportunities")
     .insert({
-      opportunity_number: nextOpportunityNumber,
-
       customer_id: opportunity.customerId,
 
       property_id: opportunity.propertyId,
@@ -81,22 +55,20 @@ ${opportunity.message}`;
 
       expected_start_date: null,
 
+      expected_completion_date: null,
+
+      probability: 10,
+
       notes:
         "Automatically created from Gary the Handyman website.",
 
       is_deleted: false,
-
-      deleted_at: null,
     })
     .select()
     .single();
 
   if (error) {
-    console.error(
-      "createOpportunity:",
-      error
-    );
-
+    console.error("createOpportunity:", error);
     throw error;
   }
 

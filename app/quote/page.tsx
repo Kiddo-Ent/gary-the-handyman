@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
+import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 export default function QuotePage() {
   const [loading, setLoading] = useState(false);
+  const [address, setAddress] = useState("");
 
+  const [suburb, setSuburb] = useState("");
+
+  const [state, setState] = useState("VIC");
+
+  const [postcode, setPostcode] = useState("");
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -72,11 +78,40 @@ export default function QuotePage() {
                 className="border rounded-lg p-3 w-full"
               />
 
-              <input
-                name="address"
-                placeholder="Property Address (Optional)"
-                className="border rounded-lg p-3 w-full"
-              />
+              <AddressAutocomplete
+  value={address}
+  onChange={setAddress}
+  onAddressSelected={(selected) => {
+    setAddress(selected.street);
+    setSuburb(selected.suburb);
+    setState(selected.state);
+    setPostcode(selected.postcode);
+  }}
+  placeholder="Start typing your property address..."
+/>
+<input
+  type="hidden"
+  name="address"
+  value={address}
+/>
+
+<input
+  type="hidden"
+  name="suburb"
+  value={suburb}
+/>
+
+<input
+  type="hidden"
+  name="state"
+  value={state}
+/>
+
+<input
+  type="hidden"
+  name="postcode"
+  value={postcode}
+/>
 
             </div>
           </section>

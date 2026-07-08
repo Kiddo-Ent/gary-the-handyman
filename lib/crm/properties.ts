@@ -1,77 +1,53 @@
 import { supabaseAdmin } from "@/lib/crm/supabase/admin";
+
 interface WebsiteProperty {
   customerId: string;
   address: string;
+  suburb: string;
+  state: string;
+  postcode: string;
 }
 
 export async function findOrCreateProperty(
   property: WebsiteProperty
 ) {
-  //
-  // Search for an existing property
-  //
+  // Search for existing property
 
-  if (property.address) {
+  const { data: existing } = await supabaseAdmin
+    .from("properties")
+    .select("*")
+    .eq("customer_id", property.customerId)
+    .eq("address_line_1", property.address)
+    .eq("is_deleted", false)
+    .maybeSingle();
 
-    const { data } = await supabaseAdmin
-      .from("properties")
-      .select("*")
-      .eq("customer_id", property.customerId)
-      .eq("address_line_1", property.address)
-      .eq("is_deleted", false)
-      .maybeSingle();
-
-    if (data) {
-      return data;
-    }
-
+  if (existing) {
+    return existing;
   }
 
-  //
-  // Determine next property number
-  //
+  // Create property
 
-  const { data: lastProperty } =
-    await supabaseAdmin
-      .from("properties")
-      .select("property_number")
-      .order("property_number", {
-        ascending: false,
-      })
-      .limit(1)
-      .maybeSingle();
+  const { data, error } = await supabaseAdmin
+    .from("properties")
+    .insert({
+      customer_id: property.customerId,
 
-  const nextPropertyNumber =
-    (lastProperty?.property_number ?? 0) + 1;
+      property_name: "Primary Property",
 
-  //
-  // Create the property
-  //
+      address_line_1: property.address,
 
-  const { data, error } =
-    await   supabaseAdmin
-      .from("properties")
-      .insert({
+      suburb: property.suburb,
 
-        property_number:
-          nextPropertyNumber,
+      state: property.state,
 
-        customer_id:
-          property.customerId,
+      postcode: property.postcode,
 
-        property_name:
-          "Primary Property",
+      is_active: true,
 
-        address_line_1:
-          property.address,
-
-        is_active: true,
-
-        is_deleted: false,
-
-      })
-      .select()
-      .single();
+      is_deleted: false,
+    })
+    .select()
+    .single();
 
   if (error) {
     throw error;

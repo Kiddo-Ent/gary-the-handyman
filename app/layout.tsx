@@ -7,7 +7,7 @@ import Footer from "@/components/Footer/Footer";
 export const metadata: Metadata = {
   title: "Gary the Handyman",
   description:
-    "Handyman services, property maintenance, security cameras and IT support throughout Inverloch and South Gippsland.",
+    "Handyman services, property maintenance, security cameras and IT support throughout South Gippsland.",
 };
 
 export default function RootLayout({
@@ -18,11 +18,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navbar />
 
-        {children}
-
-        <Footer />
+        
       </body>
     </html>
   );

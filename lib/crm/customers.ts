@@ -4,18 +4,18 @@ interface WebsiteCustomer {
   name: string;
   phone: string;
   email: string;
+  address: string;
+  suburb: string;
+  state: string;
+  postcode: string;
 }
 
 export async function findOrCreateCustomer(
   customer: WebsiteCustomer
 ) {
-
-  //
   // Search by email
-  //
 
   if (customer.email) {
-
     const { data } = await supabaseAdmin
       .from("customers")
       .select("*")
@@ -26,15 +26,11 @@ export async function findOrCreateCustomer(
     if (data) {
       return data;
     }
-
   }
 
-  //
   // Search by mobile
-  //
 
   if (customer.phone) {
-
     const { data } = await supabaseAdmin
       .from("customers")
       .select("*")
@@ -45,78 +41,50 @@ export async function findOrCreateCustomer(
     if (data) {
       return data;
     }
-
   }
 
-  //
-  // Determine next customer number
-  //
-
-  const { data: lastCustomer } =
-    await supabaseAdmin
-      .from("customers")
-      .select("customer_number")
-      .order("customer_number", {
-        ascending: false,
-      })
-      .limit(1)
-      .maybeSingle();
-
-  const nextCustomerNumber =
-    (lastCustomer?.customer_number ?? 0) + 1;
-
-  //
   // Split name
-  //
 
-  const names =
-    customer.name.trim().split(" ");
+  const names = customer.name.trim().split(" ");
 
-  const firstName =
-    names.shift() ?? "";
+  const firstName = names.shift() ?? "";
 
-  const lastName =
-    names.join(" ");
+  const lastName = names.join(" ");
 
-  //
   // Create customer
-  //
 
-  const { data, error } =
-    await supabaseAdmin
-      .from("customers")
-      .insert({
+  const { data, error } = await supabaseAdmin
+    .from("customers")
+    .insert({
+      first_name: firstName,
 
-        customer_number:
-          nextCustomerNumber,
+      last_name: lastName,
 
-        first_name:
-          firstName,
+      mobile_phone: customer.phone,
 
-        last_name:
-          lastName,
+      email: customer.email,
 
-        mobile_phone:
-          customer.phone,
+      address_line_1: customer.address,
 
-        email:
-          customer.email,
+      suburb: customer.suburb,
 
-        notes:
-          "Automatically created from Gary the Handyman website.",
+      state: customer.state,
 
-        is_active: true,
+      postcode: customer.postcode,
 
-        is_deleted: false,
+      notes:
+        "Automatically created from Gary the Handyman website.",
 
-      })
-      .select()
-      .single();
+      is_active: true,
+
+      is_deleted: false,
+    })
+    .select()
+    .single();
 
   if (error) {
     throw error;
   }
 
   return data;
-
 }

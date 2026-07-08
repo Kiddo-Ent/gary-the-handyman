@@ -1,123 +1,135 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-} from "react";
-
-import {
-  extractAddress,
-  AddressResult,
-} from "@/lib/google/places";
+import { useEffect, useRef } from "react";
+import { AddressResult } from "@/lib/google/places";
 
 interface AddressAutocompleteProps {
-
   value: string;
-
-  onChange: (
-    value: string
-  ) => void;
-
-  onAddressSelected: (
-    address: AddressResult
-  ) => void;
-
+  onChange: (value: string) => void;
+  onAddressSelected: (address: AddressResult) => void;
   placeholder?: string;
-
 }
 
 export default function AddressAutocomplete({
-
   value,
-
   onChange,
-
   onAddressSelected,
-
-  placeholder = "Start typing an address...",
-
+  placeholder = "Start typing your address...",
 }: AddressAutocompleteProps) {
-
-  const inputRef =
-    useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let autocomplete: any;
 
-    if (
-      !window.google ||
-      !inputRef.current
-    ) {
-      return;
-    }
+    async function initialise() {
+      if (!containerRef.current) return;
 
-    const autocomplete =
-      new google.maps.places.Autocomplete(
-        inputRef.current,
-        {
+      // Wait until Google has loaded
+      if (!(window as any).google?.maps) {
+        console.warn("Google Maps API not loaded yet.");
+        return;
+      }
 
-          componentRestrictions: {
-            country: "au",
-          },
+      const { PlaceAutocompleteElement } =
+        (await (window as any).google.maps.importLibrary(
+          "places"
+        )) as any;
 
-          fields: [
-            "address_components",
-            "formatted_address",
-          ],
+      autocomplete = new PlaceAutocompleteElement();
 
-          types: ["address"],
+      autocomplete.setAttribute("placeholder", placeholder);
 
+      autocomplete.addEventListener(
+        "gmp-select",
+        async (event: any) => {
+          const prediction = event.placePrediction;
+
+          const place = prediction.toPlace();
+
+          await place.fetchFields({
+            fields: [
+              "formattedAddress",
+              "addressComponents",
+            ],
+          });
+
+          let streetNumber = "";
+          let route = "";
+          let suburb = "";
+          let state = "";
+          let postcode = "";
+
+          for (const component of place.addressComponents) {
+            const type = component.types[0];
+
+            switch (type) {
+              case "street_number":
+                streetNumber = component.longText;
+                break;
+
+              case "route":
+                route = component.longText;
+                break;
+
+              case "locality":
+                suburb = component.longText;
+                break;
+
+              case "administrative_area_level_1":
+                state = component.shortText;
+                break;
+
+              case "postal_code":
+                postcode = component.longText;
+                break;
+            }
+          }
+
+          const street =
+            `${streetNumber} ${route}`.trim();
+
+          onChange(street);
+
+          onAddressSelected({
+            street,
+            suburb,
+            state,
+            postcode,
+            formattedAddress:
+              place.formattedAddress,
+          });
         }
       );
 
-    autocomplete.addListener(
-      "place_changed",
-      () => {
+      containerRef.current.innerHTML = "";
+      containerRef.current.appendChild(autocomplete);
+    }
 
-        const place =
-          autocomplete.getPlace();
+    initialise();
 
-        const address =
-          extractAddress(place);
-
-        onChange(
-          address.formattedAddress
+    return () => {
+      if (
+        autocomplete &&
+        containerRef.current?.contains(autocomplete)
+      ) {
+        containerRef.current.removeChild(
+          autocomplete
         );
-
-        onAddressSelected(
-          address
-        );
-
       }
-    );
-
-  }, [onAddressSelected, onChange]);
+    };
+  }, [onAddressSelected, onChange, placeholder]);
 
   return (
+    <div className="space-y-2">
+      <div ref={containerRef} />
 
-    <input
-
-      ref={inputRef}
-
-      value={value}
-
-      onChange={(e) =>
-        onChange(
-          e.target.value
-        )
-      }
-
-      placeholder={placeholder}
-
-      className="
-        w-full
-        rounded-lg
-        border
-        px-4
-        py-3
-      "
-
-    />
-
+      {/* Hidden input so FormData still includes address */}
+      <input
+        type="hidden"
+        name="address"
+        value={value}
+        readOnly
+      />
+    </div>
   );
-
 }
