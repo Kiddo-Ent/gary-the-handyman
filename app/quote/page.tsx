@@ -113,7 +113,14 @@ export default function QuotePage() {
   name="postcode"
   value={postcode}
 />
+<div className="rounded-lg bg-gray-100 p-4 text-sm">
+  <strong>Debug</strong>
 
+  <div>Address: {address}</div>
+  <div>Suburb: {suburb}</div>
+  <div>State: {state}</div>
+  <div>Postcode: {postcode}</div>
+</div>
             </div>
           </section>
 

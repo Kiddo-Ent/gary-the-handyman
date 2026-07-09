@@ -47,17 +47,21 @@ ${opportunity.message}`;
 
       description,
 
+      // Where the lead came from
       source: "Website",
 
-      opportunity_status: "Lead",
+      // Must match the database CHECK constraint
+      opportunity_status: "New",
 
+      // Unknown until quoted
       estimated_value: 0,
 
       expected_start_date: null,
 
       expected_completion_date: null,
 
-      probability: 10,
+      // Brand new enquiry
+      probability: 0,
 
       notes:
         "Automatically created from Gary the Handyman website.",
