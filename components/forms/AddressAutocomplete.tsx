@@ -1,7 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { AddressResult } from "@/lib/google/places";
+import { useEffect, useRef, useState } from "react";
+
+export interface AddressResult {
+  street: string;
+  suburb: string;
+  state: string;
+  postcode: string;
+  formattedAddress: string;
+}
+
+interface Suggestion {
+  placeId: string;
+  text: string;
+}
 
 interface AddressAutocompleteProps {
   value: string;
@@ -16,120 +28,134 @@ export default function AddressAutocomplete({
   onAddressSelected,
   placeholder = "Start typing your address...",
 }: AddressAutocompleteProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const ignoreNextSearch = useRef(false);
+  const requestId = useRef(0);
 
   useEffect(() => {
-    let autocomplete: any;
+    if (ignoreNextSearch.current) {
+      ignoreNextSearch.current = false;
+      return;
+    }
 
-    async function initialise() {
-      if (!containerRef.current) return;
+    if (value.trim().length < 3) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
 
-      // Wait until Google has loaded
-      if (!(window as any).google?.maps) {
-        console.warn("Google Maps API not loaded yet.");
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      const currentRequest = ++requestId.current;
+
+      try {
+        setLoading(true);
+
+        const response = await fetch(
+          `/api/google/autocomplete?q=${encodeURIComponent(value)}`
+        );
+
+        if (!response.ok) {
+          console.error(await response.text());
+          setSuggestions([]);
+          return;
+        }
+
+        const results = (await response.json()) as Suggestion[];
+
+        if (currentRequest !== requestId.current) return;
+
+        setSuggestions(results);
+        setShowDropdown(results.length > 0);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [value]);
+
+  async function selectSuggestion(suggestion: Suggestion) {
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `/api/google/place?placeId=${encodeURIComponent(
+          suggestion.placeId
+        )}`
+      );
+
+      if (!response.ok) {
+        console.error(await response.text());
         return;
       }
 
-      const { PlaceAutocompleteElement } =
-        (await (window as any).google.maps.importLibrary(
-          "places"
-        )) as any;
+      const address = (await response.json()) as AddressResult;
 
-      autocomplete = new PlaceAutocompleteElement();
+      ignoreNextSearch.current = true;
 
-      autocomplete.setAttribute("placeholder", placeholder);
+      setSuggestions([]);
+      setShowDropdown(false);
 
-      autocomplete.addEventListener(
-        "gmp-select",
-        async (event: any) => {
-          const prediction = event.placePrediction;
-
-          const place = prediction.toPlace();
-
-          await place.fetchFields({
-            fields: [
-              "formattedAddress",
-              "addressComponents",
-            ],
-          });
-
-          let streetNumber = "";
-          let route = "";
-          let suburb = "";
-          let state = "";
-          let postcode = "";
-
-          for (const component of place.addressComponents) {
-            const type = component.types[0];
-
-            switch (type) {
-              case "street_number":
-                streetNumber = component.longText;
-                break;
-
-              case "route":
-                route = component.longText;
-                break;
-
-              case "locality":
-                suburb = component.longText;
-                break;
-
-              case "administrative_area_level_1":
-                state = component.shortText;
-                break;
-
-              case "postal_code":
-                postcode = component.longText;
-                break;
-            }
-          }
-
-          const street =
-            `${streetNumber} ${route}`.trim();
-
-          onChange(street);
-
-          onAddressSelected({
-            street,
-            suburb,
-            state,
-            postcode,
-            formattedAddress:
-              place.formattedAddress,
-          });
-        }
-      );
-
-      containerRef.current.innerHTML = "";
-      containerRef.current.appendChild(autocomplete);
+      // Parent owns ALL state updates
+      onAddressSelected(address);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    initialise();
-
-    return () => {
-      if (
-        autocomplete &&
-        containerRef.current?.contains(autocomplete)
-      ) {
-        containerRef.current.removeChild(
-          autocomplete
-        );
-      }
-    };
-  }, [onAddressSelected, onChange, placeholder]);
+  }
 
   return (
-    <div className="space-y-2">
-      <div ref={containerRef} />
-
-      {/* Hidden input so FormData still includes address */}
+    <div className="relative w-full">
       <input
-        type="hidden"
-        name="address"
+        type="text"
         value={value}
-        readOnly
+        autoComplete="off"
+        placeholder={placeholder}
+        className="w-full rounded-lg border p-3"
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => {
+          if (suggestions.length > 0) {
+            setShowDropdown(true);
+          }
+        }}
       />
+
+      {loading && (
+        <div className="absolute right-3 top-3 text-sm text-gray-500">
+          Searching...
+        </div>
+      )}
+
+      {showDropdown && suggestions.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-xl">
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion.placeId}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                selectSuggestion(suggestion);
+              }}
+              className="block w-full border-b px-4 py-3 text-left hover:bg-blue-50 last:border-b-0"
+            >
+              {suggestion.text}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

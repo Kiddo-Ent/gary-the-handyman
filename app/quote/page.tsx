@@ -82,13 +82,14 @@ export default function QuotePage() {
   value={address}
   onChange={setAddress}
   onAddressSelected={(selected) => {
-    setAddress(selected.street);
+    setAddress(selected.formattedAddress);
     setSuburb(selected.suburb);
     setState(selected.state);
     setPostcode(selected.postcode);
   }}
   placeholder="Start typing your property address..."
 />
+
 <input
   type="hidden"
   name="address"

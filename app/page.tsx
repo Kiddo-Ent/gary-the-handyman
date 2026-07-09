@@ -205,42 +205,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-slate-800 text-gray-300 py-10 px-6">
-        <div className="max-w-6xl mx-auto">
-
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-              <h3 className="text-xl text-white font-bold">Gary the Handyman</h3>
-              <p className="text-sm mt-2">
-                Proudly servicing South Gippsland with honest, reliable workmanship.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-6 text-sm">
-              <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-white">Terms & Conditions</Link>
-              <Link href="/quote" className="hover:text-white">Request Quote</Link>
-              <Link href="/contact" className="hover:text-white">Contact</Link>
-            </div>
-          </div>
-
-          <div className="border-t border-slate-700 mt-8 pt-6 text-xs leading-6">
-            <p>
-              All quotations are provided free of charge and are based on the information supplied.
-              An on-site inspection may be required before a final quotation can be provided.
-            </p>
-            <p className="mt-3">
-              Information on this website is provided in good faith and may change without notice.
-              Gary the Handyman reserves the right to decline work at his discretion.
-            </p>
-            <p className="mt-3">
-              © {new Date().getFullYear()} Gary the Handyman. All Rights Reserved.
-            </p>
-          </div>
-
-        </div>
-      </footer>
-
+      
     </main>
   );
 }
