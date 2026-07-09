@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { findOrCreateCustomer } from "@/lib/crm/customers";
 import { findOrCreateProperty } from "@/lib/crm/properties";
 import { createOpportunity } from "@/lib/crm/opportunities";
+import { uploadPhoto } from "@/lib/crm/photos";
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +11,23 @@ export async function POST(request: Request) {
 
     const form = await request.formData();
 
+    // ======================================
+    // Uploaded Photos
+    // ======================================
+
+    const photos = form
+      .getAll("photos")
+      .filter(
+        (item): item is File =>
+          item instanceof File && item.size > 0
+      );
+console.log("Photos received:", photos.length);
+
+photos.forEach((photo, index) => {
+  console.log(
+    `Photo ${index + 1}: ${photo.name} (${photo.size} bytes) ${photo.type}`
+  );
+});
     // ======================================
     // Form Data
     // ======================================
@@ -108,6 +126,37 @@ export async function POST(request: Request) {
     );
 
     // ======================================
+    // Upload Photos
+    // ======================================
+
+    let uploadedPhotoCount = 0;
+
+for (const photo of photos) {
+  try {
+    console.log("Uploading:", photo.name);
+
+    await uploadPhoto({
+      file: photo,
+      customerId: customer.id,
+      propertyId: property.id,
+      opportunityId: opportunity.id,
+      uploadedBy: "Website",
+    });
+
+    uploadedPhotoCount++;
+
+    console.log("Uploaded:", photo.name);
+  } catch (error) {
+    console.error(
+      `Failed to upload ${photo.name}`,
+      error
+    );
+  }
+}
+
+console.log(`${uploadedPhotoCount} photo(s) uploaded.`);
+    
+    // ======================================
     // Email
     // ======================================
 
@@ -140,40 +189,19 @@ and has automatically been entered into ToolBox.
 
 <table cellpadding="8">
 
-<tr>
-<td><strong>Name</strong></td>
-<td>${name}</td>
-</tr>
+<tr><td><strong>Name</strong></td><td>${name}</td></tr>
 
-<tr>
-<td><strong>Phone</strong></td>
-<td>${phone}</td>
-</tr>
+<tr><td><strong>Phone</strong></td><td>${phone}</td></tr>
 
-<tr>
-<td><strong>Email</strong></td>
-<td>${email}</td>
-</tr>
+<tr><td><strong>Email</strong></td><td>${email}</td></tr>
 
-<tr>
-<td><strong>Street Address</strong></td>
-<td>${address}</td>
-</tr>
+<tr><td><strong>Address</strong></td><td>${address}</td></tr>
 
-<tr>
-<td><strong>Suburb</strong></td>
-<td>${suburb}</td>
-</tr>
+<tr><td><strong>Suburb</strong></td><td>${suburb}</td></tr>
 
-<tr>
-<td><strong>State</strong></td>
-<td>${state}</td>
-</tr>
+<tr><td><strong>State</strong></td><td>${state}</td></tr>
 
-<tr>
-<td><strong>Postcode</strong></td>
-<td>${postcode}</td>
-</tr>
+<tr><td><strong>Postcode</strong></td><td>${postcode}</td></tr>
 
 </table>
 
@@ -183,20 +211,13 @@ and has automatically been entered into ToolBox.
 
 <table cellpadding="8">
 
-<tr>
-<td><strong>Service</strong></td>
-<td>${service}</td>
-</tr>
+<tr><td><strong>Service</strong></td><td>${service}</td></tr>
 
-<tr>
-<td><strong>Preferred Contact</strong></td>
-<td>${contactMethod}</td>
-</tr>
+<tr><td><strong>Preferred Contact</strong></td><td>${contactMethod}</td></tr>
 
-<tr>
-<td><strong>Preferred Inspection</strong></td>
-<td>${inspection}</td>
-</tr>
+<tr><td><strong>Preferred Inspection</strong></td><td>${inspection}</td></tr>
+
+<tr><td><strong>Photos Uploaded</strong></td><td>${uploadedPhotoCount}</td></tr>
 
 </table>
 
@@ -222,8 +243,7 @@ ${message}
 </p>
 
 <p style="font-size:12px;color:#666;">
-Automatically created from
-garythehandyman.com.au
+Automatically created from garythehandyman.com.au
 </p>
 
 </div>
@@ -239,8 +259,8 @@ garythehandyman.com.au
       opportunityId: opportunity.id,
       opportunityNumber:
         opportunity.opportunity_number,
+      uploadedPhotos: uploadedPhotoCount,
     });
-
   } catch (error) {
     console.error(
       "Website Quote Submission Failed",
