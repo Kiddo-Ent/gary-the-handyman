@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 export default function QuotePage() {
@@ -14,6 +14,7 @@ export default function QuotePage() {
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
+  const addressRef = useRef<HTMLDivElement>(null);
   async function handleSubmit(
   e: React.FormEvent<HTMLFormElement>
 ) {
@@ -90,33 +91,32 @@ export default function QuotePage() {
                 className="border rounded-lg p-3 w-full"
               />
 
-              <AddressAutocomplete
-  value={address}
-  onChange={(value) => {
-    setAddress(value);
+              <div ref={addressRef}>
+  <label className="mb-2 block text-sm font-semibold text-slate-700">
+    Property Address <span className="text-red-600">*</span>
+  </label>
 
-    // User is typing again, so they must
-    // choose a suggestion before submitting.
-    setAddressSelected(false);
-
-    setSuburb("");
-    setState("VIC");
-    setPostcode("");
-
-    setAddressError("");
-  }}
-  onAddressSelected={(selected) => {
-    setAddress(selected.formattedAddress);
-
-    setSuburb(selected.suburb);
-    setState(selected.state);
-    setPostcode(selected.postcode);
-
-    setAddressSelected(true);
-    setAddressError("");
-  }}
-  placeholder="Start typing your property address..."
-/>
+  <AddressAutocomplete
+    value={address}
+    onChange={(value) => {
+      setAddress(value);
+      setAddressSelected(false);
+      setSuburb("");
+      setState("VIC");
+      setPostcode("");
+      setAddressError("");
+    }}
+    onAddressSelected={(selected) => {
+      setAddress(selected.formattedAddress);
+      setSuburb(selected.suburb);
+      setState(selected.state);
+      setPostcode(selected.postcode);
+      setAddressSelected(true);
+      setAddressError("");
+    }}
+    placeholder="Property Address *"
+  />
+</div>
 
 <input
   type="hidden"
