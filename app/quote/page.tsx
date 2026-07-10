@@ -1,24 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 export default function QuotePage() {
   const [loading, setLoading] = useState(false);
   const [address, setAddress] = useState("");
-
   const [suburb, setSuburb] = useState("");
-
   const [state, setState] = useState("VIC");
-
   const [postcode, setPostcode] = useState("");
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
+  const [addressSelected, setAddressSelected] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInput = useRef<HTMLInputElement>(null);
+  async function handleSubmit(
+  e: React.FormEvent<HTMLFormElement>
+) {
+  e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
+  if (!addressSelected || !suburb || !postcode) {
+    setAddressError(
+      "Please select your address from the Google suggestions."
+    );
+    return;
+  }
 
-    try {
+  setLoading(true);
+
+  const formData = new FormData(e.currentTarget);
+
+  try {
       const res = await fetch("/api/contact", {
         method: "POST",
         body: formData,
@@ -80,12 +92,28 @@ export default function QuotePage() {
 
               <AddressAutocomplete
   value={address}
-  onChange={setAddress}
+  onChange={(value) => {
+    setAddress(value);
+
+    // User is typing again, so they must
+    // choose a suggestion before submitting.
+    setAddressSelected(false);
+
+    setSuburb("");
+    setState("VIC");
+    setPostcode("");
+
+    setAddressError("");
+  }}
   onAddressSelected={(selected) => {
     setAddress(selected.formattedAddress);
+
     setSuburb(selected.suburb);
     setState(selected.state);
     setPostcode(selected.postcode);
+
+    setAddressSelected(true);
+    setAddressError("");
   }}
   placeholder="Start typing your property address..."
 />
@@ -113,14 +141,11 @@ export default function QuotePage() {
   name="postcode"
   value={postcode}
 />
-<div className="rounded-lg bg-gray-100 p-4 text-sm">
-  <strong>Debug</strong>
-
-  <div>Address: {address}</div>
-  <div>Suburb: {suburb}</div>
-  <div>State: {state}</div>
-  <div>Postcode: {postcode}</div>
-</div>
+{addressError && (
+  <p className="mt-2 text-sm font-medium text-red-600">
+    ⚠ {addressError}
+  </p>
+)}
             </div>
           </section>
 
@@ -200,22 +225,103 @@ export default function QuotePage() {
           </section>
 
           <section>
-
+       
             <h2 className="text-2xl font-semibold mb-4">
               Upload Photos (Optional)
             </h2>
 
             <input
-              type="file"
-              name="photos"
-              multiple
-              accept=".jpg,.jpeg,.png,.heic,.pdf"
-              className="border rounded-lg p-3 w-full"
-            />
+  ref={fileInput}
+  type="file"
+  name="photos"
+  multiple
+  accept=".jpg,.jpeg,.png,.heic,.pdf"
+  className="hidden"
+  onChange={(e) => {
+    const files = Array.from(e.target.files ?? []);
 
-            <p className="text-sm text-gray-500 mt-2">
-              Upload up to 5 photos to help Gary prepare a more accurate quote.
+    if (files.length > 5) {
+      alert("Maximum 5 photos may be uploaded.");
+      return;
+    }
+
+    setSelectedFiles(files);
+
+    const previews = files
+      .filter((file) => file.type.startsWith("image/"))
+      .map((file) => URL.createObjectURL(file));
+
+    setPhotoPreviews(previews);
+  }}
+/>
+
+<button
+  type="button"
+  onClick={() => fileInput.current?.click()}
+  className="w-full rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 py-8 transition hover:border-blue-500 hover:bg-blue-100"
+>
+
+  <div className="text-5xl mb-3">
+    📷
+  </div>
+
+  <div className="text-xl font-bold text-slate-700">
+    Browse Photos
+  </div>
+
+  <p className="mt-2 text-sm text-slate-500">
+    JPG • PNG • HEIC • PDF
+  </p>
+
+  <p className="text-sm text-slate-500">
+    Maximum 5 photos
+  </p>
+
+</button>
+{photoPreviews.length > 0 && (
+
+  <div className="mt-6">
+
+    <h3 className="mb-4 text-lg font-semibold">
+
+      Selected Photos ({selectedFiles.length})
+
+    </h3>
+
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+
+      {photoPreviews.map((preview, index) => (
+
+        <div
+          key={index}
+          className="overflow-hidden rounded-xl border bg-white shadow"
+        >
+
+          <img
+            src={preview}
+            alt={`Preview ${index + 1}`}
+            className="aspect-square w-full object-cover"
+          />
+
+          <div className="border-t bg-slate-50 p-2 text-center">
+
+            <p className="truncate text-xs">
+
+              {selectedFiles[index].name}
+
             </p>
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+)}
 
           </section>
 

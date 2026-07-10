@@ -56,25 +56,40 @@ photos.forEach((photo, index) => {
     // Validation
     // ======================================
 
-    if (
-      !name ||
-      !phone ||
-      !email ||
-      !address ||
-      !suburb ||
-      !service ||
-      !message
-    ) {
-      return Response.json(
-        {
-          success: false,
-          message: "Please complete all required fields.",
-        },
-        {
-          status: 400,
-        }
-      );
+    console.log("Validation Check");
+console.table({
+  name,
+  phone,
+  email,
+  address,
+  suburb,
+  state,
+  postcode,
+  service,
+  message,
+});
+
+if (
+  !name ||
+  !phone ||
+  !email ||
+  !address ||
+  !suburb ||
+  !service ||
+  !message
+) {
+  console.error("Validation failed.");
+
+  return Response.json(
+    {
+      success: false,
+      message: "Please complete all required fields.",
+    },
+    {
+      status: 400,
     }
+  );
+}
 
     // ======================================
     // Customer
