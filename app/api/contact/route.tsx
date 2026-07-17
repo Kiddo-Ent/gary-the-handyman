@@ -105,7 +105,7 @@ if (
         state,
         postcode,
       });
-
+console.log("Customer created:", customer);
     // ======================================
     // Property
     // ======================================

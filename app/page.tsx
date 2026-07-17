@@ -59,7 +59,7 @@ export default function Home() {
             <div className="max-w-2xl ml-auto text-right text-white">
 
               <p className="uppercase tracking-widest text-orange-300 font-semibold mb-3">
-                Local • Reliable • Professional
+                Local • Reliable • Professional • NDIS Approved
               </p>
 
               <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
@@ -72,7 +72,7 @@ export default function Home() {
               </p>
 
               <div className="flex flex-wrap justify-end gap-3 mb-8">
-                {["Local Business","Free Quotes","Reliable","Quality Work"].map((item)=>(
+                {["Local Business","Free Quotes","Quality Work","NDIS Approved"].map((item)=>(
                   <span key={item} className="bg-white/15 backdrop-blur px-4 py-2 rounded-full text-sm">
                     ✓ {item}
                   </span>
@@ -149,10 +149,10 @@ export default function Home() {
           <div className="grid md:grid-cols-5 gap-6">
             {[
               "Reliable",
-              "Local Knowledge",
               "Friendly Service",
               "Affordable Pricing",
               "Quality Workmanship",
+              "NDIS Approved"
             ].map((item)=>(
               <div key={item}
                 className="bg-white border rounded-xl shadow p-6 font-semibold">
