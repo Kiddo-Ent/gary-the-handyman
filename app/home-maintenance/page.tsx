@@ -151,62 +151,24 @@ export default function HomeMaintenancePage() {
 
       </section>
 
-      {/* Recent Projects */}
+      {/* Future Gallery */}
 
-<section className="bg-gray-100 py-20 px-6">
-  <div className="max-w-6xl mx-auto">
-    <h2 className="text-4xl font-bold text-center mb-4">
-      Recent Projects
-    </h2>
+      <section className="bg-gray-100 py-20 px-6">
 
-    <p className="text-xl text-gray-600 text-center mb-12">
-      A selection of recent home maintenance and repair work across South
-      Gippsland.
-    </p>
+        <div className="max-w-5xl mx-auto text-center">
 
-    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-      {[
-        {
-          src: "/images/projects/Cam1.jpg",
-          alt: "Completed Security Camera Installation",
-          title: "Install Camera",
-          description: "Repair work completed to restore a safe, tidy deck.",
-        },
-        {
-          src: "/images/projects/Cam2.jpg",
-          alt: "Completed Security Camera Installation",
-          title: "Install Camera",
-          description: "A practical fence repair completed for a local property.",
-        },
-        {
-          src: "/images/projects/Cam3.jpg",
-          alt: "Completed Security Camera Installation",
-          title: "Install Camera",
-          description: "Gate repaired and adjusted for smooth, reliable operation.",
-        },
-      ].map((project) => (
-        <article
-          key={project.src}
-          className="overflow-hidden rounded-xl bg-white shadow border"
-        >
-          <div className="relative aspect-[4/3]">
-            <Image
-              src={project.src}
-              alt={project.alt}
-              fill
-              className="object-cover"
-            />
-          </div>
+          <h2 className="text-4xl font-bold mb-6">
+            Recent Projects
+          </h2>
 
-          <div className="p-6">
-            <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-            <p className="text-gray-600">{project.description}</p>
-          </div>
-        </article>
-      ))}
-    </div>
-  </div>
-</section>
+          <p className="text-xl text-gray-600">
+            Photos of recent home maintenance and repair projects will be
+            added here soon.
+          </p>
+
+        </div>
+
+      </section>
 
       {/* Call To Action */}
 

@@ -148,24 +148,82 @@ export default function SecurityCamerasPage() {
 
       </section>
 
-      {/* Future Gallery */}
+      {/* Recent Projects */}
 
-      <section className="bg-gray-100 py-20 px-6">
+<section className="bg-gray-100 py-20 px-6">
+  <div className="max-w-6xl mx-auto">
+    <h2 className="text-4xl font-bold text-center mb-4">
+      Recent Installations
+    </h2>
 
-        <div className="max-w-5xl mx-auto text-center">
+    <p className="text-xl text-gray-600 text-center mb-12">
+      A selection of recent security camera installations across South Gippsland.
+    </p>
 
-          <h2 className="text-4xl font-bold mb-6">
-            Recent Installations
-          </h2>
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {[
+        {
+          image: "/images/projects/Cam1.jpg",
+          closeUp: "/images/projects/Cam1sm.jpg",
+          title: "Security Camera Installation",
+          description:
+            "Full security camera system installation, including TP-Link bridges and Reolink cameras.",
+        },
+        {
+          image: "/images/projects/Cam2.jpg",
+          closeUp: "/images/projects/Cam2sm.jpg",
+          title: "Camera and Bridge Setup",
+          description:
+            "A close look at the completed TP-Link bridge and Reolink camera setup.",
+        },
+        {
+          image: "/images/projects/Cam3.jpg",
+          closeUp: "/images/projects/Cam3sm.jpg",
+          title: "Completed Installation",
+          description:
+            "Finished bridge and security camera installation.",
+        },
+      ].map((project) => (
+        <article
+          key={project.image}
+          className="overflow-hidden rounded-xl bg-white shadow border"
+        >
+          <a
+            href={project.closeUp}
+            target="_blank"
+            rel="noreferrer"
+            className="group block"
+            aria-label={`Open close-up of ${project.title}`}
+          >
+            <div className="relative aspect-[4/3] overflow-hidden">
+              <Image
+                src={project.image}
+                alt={project.title}
+                fill
+                className="object-cover transition duration-300 group-hover:scale-105"
+              />
+            </div>
+          </a>
 
-          <p className="text-xl text-gray-600">
-            Photos of recent security camera installations will be
-            added here soon.
-          </p>
+          <div className="p-6">
+            <h3 className="text-xl font-bold mb-2">{project.title}</h3>
 
-        </div>
+            <p className="text-gray-600 mb-4">{project.description}</p>
 
-      </section>
+            <a
+              href={project.closeUp}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-orange-600 hover:text-orange-700"
+            >
+              View close-up →
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* Call To Action */}
 
