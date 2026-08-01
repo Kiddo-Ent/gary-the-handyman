@@ -100,7 +100,7 @@ export default function PrivacyPage() {
 
           <p>
             If you have questions about this Privacy Policy please contact
-            Gary via the Contact page or call 0409 709 234.
+            Gary via the Contact page or call 0488 471 669.
           </p>
         </section>
 

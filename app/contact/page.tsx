@@ -8,7 +8,7 @@ return ( <main className="min-h-screen py-20 px-6"> <div className="max-w-4xl mx
     <div className="space-y-6 text-xl">
 
       <p>
-        <strong>Phone:</strong> 0409 709 234
+        <strong>Phone:</strong> 0488 471 669
       </p>
 
       <p>
@@ -32,7 +32,7 @@ return ( <main className="min-h-screen py-20 px-6"> <div className="max-w-4xl mx
 
       <div className="pt-6">
         <a
-          href="tel:0409709234"
+          href="tel:0488471669"
           className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold"
         >
           Call Gary Now

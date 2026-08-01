@@ -22,7 +22,7 @@ export default function Footer() {
               Contact
             </h4>
 
-            <p>📞 0409 709 234</p>
+            <p>📞 0488 471 669</p>
             <p>✉️ garythehandyman26@gmail.com</p>
           </div>
 

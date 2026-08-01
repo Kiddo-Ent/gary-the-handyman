@@ -25,10 +25,10 @@ return ( <main className="min-h-screen flex items-center justify-center px-6 bg-
     </p>
 
     <a
-      href="tel:0409709234"
+      href="tel:0488471669"
       className="inline-block bg-orange-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-orange-600"
     >
-      📞 0409 709 234
+      📞 0488 471 669
     </a>
 
     <div className="mt-8">

@@ -250,7 +250,7 @@ export default function SecurityCamerasPage() {
             </Link>
 
             <a
-              href="tel:0409709234"
+              href="tel:0488471669"
               className="bg-white text-slate-900 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold"
             >
               📞 Call Gary

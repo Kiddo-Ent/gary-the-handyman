@@ -85,7 +85,7 @@ export default function Home() {
                   Request a Free Quote
                 </Link>
 
-                <a href="tel:0409709234"
+                <a href="tel:0488471669"
                   className="bg-white text-slate-900 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-center">
                   📞 Call Gary
                 </a>
@@ -197,9 +197,9 @@ export default function Home() {
               Request a Quote
             </Link>
 
-            <a href="tel:0409709234"
+            <a href="tel:0488471669"
               className="bg-white text-slate-900 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold">
-              📞 0409 709 234
+              📞 0488 471 669
             </a>
           </div>
         </div>

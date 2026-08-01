@@ -35,10 +35,10 @@ export default function QuoteSuccessPage() {
           </p>
 
           <a
-            href="tel:0409709234"
+            href="tel:0488471669"
             className="mt-2 block text-2xl font-bold text-blue-600 hover:underline"
           >
-            0409 709 234
+            0488 471 669
           </a>
 
         </div>
