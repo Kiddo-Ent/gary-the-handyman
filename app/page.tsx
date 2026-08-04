@@ -47,7 +47,7 @@ export default function Home() {
 
       <section className="relative h-[560px] md:h-[720px]">
         <Image
-          src="/Images/hero.jpg"
+          src="/Images/newHero.jpg"
           alt="Gary the Handyman"
           fill
           priority
