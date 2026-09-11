@@ -5,15 +5,32 @@ import { findOrCreateProperty } from "@/lib/crm/properties";
 import { createOpportunity } from "@/lib/crm/opportunities";
 import { uploadPhoto } from "@/lib/crm/photos";
 
-export const runtime = "nodejs";
-
 export async function POST(request: Request) {
-  let stage = "Starting";
-
   try {
-    stage = "Reading form data";
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     const form = await request.formData();
+
+    // ======================================
+    // Uploaded Photos
+    // ======================================
+
+    const photos = form
+      .getAll("photos")
+      .filter(
+        (item): item is File =>
+          item instanceof File && item.size > 0
+      );
+console.log("Photos received:", photos.length);
+
+photos.forEach((photo, index) => {
+  console.log(
+    `Photo ${index + 1}: ${photo.name} (${photo.size} bytes) ${photo.type}`
+  );
+});
+    // ======================================
+    // Form Data
+    // ======================================
 
     const name = form.get("name")?.toString().trim() ?? "";
     const phone = form.get("phone")?.toString().trim() ?? "";
@@ -28,174 +45,146 @@ export async function POST(request: Request) {
     const message = form.get("message")?.toString().trim() ?? "";
 
     const contactMethod =
-      form.get("contactMethod")?.toString().trim() ?? "Phone";
+      form.get("contactMethod")?.toString().trim() ??
+      "Phone";
 
     const inspection =
-      form.get("inspection")?.toString().trim() ?? "";
+      form.get("inspection")?.toString().trim() ??
+      "";
 
-    const photos = form
-      .getAll("photos")
-      .filter(
-        (item): item is File =>
-          item instanceof File && item.size > 0
-      );
+    // ======================================
+    // Validation
+    // ======================================
 
-    console.log("====================================");
-    console.log("QUOTE REQUEST STARTED");
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Service:", service);
-    console.log("Photos:", photos.length);
-    console.log("====================================");
+    console.log("Validation Check");
+console.table({
+  name,
+  phone,
+  email,
+  address,
+  suburb,
+  state,
+  postcode,
+  service,
+  message,
+});
 
-    if (
-      !name ||
-      !phone ||
-      !email ||
-      !address ||
-      !suburb ||
-      !service ||
-      !message
-    ) {
-      console.error("Validation failed");
+if (
+  !name ||
+  !phone ||
+  !email ||
+  !address ||
+  !suburb ||
+  !service ||
+  !message
+) {
+  console.error("Validation failed.");
 
-      return Response.json(
-        {
-          success: false,
-          stage: "Form validation",
-          message: "Required form fields are missing.",
-        },
-        { status: 400 }
-      );
+  return Response.json(
+    {
+      success: false,
+      message: "Please complete all required fields.",
+    },
+    {
+      status: 400,
     }
+  );
+}
 
-    // --------------------------------------------------
-    // CUSTOMER
-    // --------------------------------------------------
+    // ======================================
+    // Customer
+    // ======================================
 
-    stage = "Creating/finding customer";
+    const customer =
+      await findOrCreateCustomer({
+        name,
+        phone,
+        email,
+        address,
+        suburb,
+        state,
+        postcode,
+      });
+console.log("Customer created:", customer);
+    // ======================================
+    // Property
+    // ======================================
 
-    console.log("STEP 1: Finding or creating customer...");
+    const property =
+      await findOrCreateProperty({
+        customerId: customer.id,
+        address,
+        suburb,
+        state,
+        postcode,
+      });
 
-    const customer = await findOrCreateCustomer({
-      name,
-      phone,
-      email,
-      address,
-      suburb,
-      state,
-      postcode,
-    });
+    // ======================================
+    // Opportunity
+    // ======================================
 
-    console.log("Customer OK:", customer.id);
-
-    // --------------------------------------------------
-    // PROPERTY
-    // --------------------------------------------------
-
-    stage = "Creating/finding property";
-
-    console.log("STEP 2: Finding or creating property...");
-
-    const property = await findOrCreateProperty({
-      customerId: customer.id,
-      address,
-      suburb,
-      state,
-      postcode,
-    });
-
-    console.log("Property OK:", property.id);
-
-    // --------------------------------------------------
-    // OPPORTUNITY
-    // --------------------------------------------------
-
-    stage = "Creating opportunity";
-
-    console.log("STEP 3: Creating opportunity...");
-
-    const opportunity = await createOpportunity({
-      customerId: customer.id,
-      propertyId: property.id,
-      customerName: name,
-      phone,
-      email,
-      service,
-      message,
-      contactMethod,
-      inspection,
-    });
+    const opportunity =
+      await createOpportunity({
+        customerId: customer.id,
+        propertyId: property.id,
+        customerName: name,
+        phone,
+        email,
+        service,
+        message,
+        contactMethod,
+        inspection,
+      });
 
     console.log(
-      "Opportunity OK:",
-      opportunity.id,
-      opportunity.opportunity_number
+      `Website Opportunity #${opportunity.opportunity_number} created successfully.`
     );
 
-    // --------------------------------------------------
-    // PHOTOS
-    // --------------------------------------------------
+    // ======================================
+    // Upload Photos
+    // ======================================
 
     let uploadedPhotoCount = 0;
 
-    stage = "Uploading photos";
+for (const photo of photos) {
+  try {
+    console.log("Uploading:", photo.name);
 
-    console.log(
-      `STEP 4: Processing ${photos.length} photo(s)...`
+    await uploadPhoto({
+      file: photo,
+      customerId: customer.id,
+      propertyId: property.id,
+      opportunityId: opportunity.id,
+      uploadedBy: "Website",
+    });
+
+    uploadedPhotoCount++;
+
+    console.log("Uploaded:", photo.name);
+  } catch (error) {
+    console.error(
+      `Failed to upload ${photo.name}`,
+      error
     );
+  }
+}
 
-    for (const photo of photos) {
-      try {
-        console.log(
-          `Uploading ${photo.name} (${photo.size} bytes)...`
-        );
+console.log(`${uploadedPhotoCount} photo(s) uploaded.`);
+    
+    // ======================================
+    // Email
+    // ======================================
 
-        await uploadPhoto({
-          file: photo,
-          customerId: customer.id,
-          propertyId: property.id,
-          opportunityId: opportunity.id,
-          uploadedBy: "Website",
-        });
-
-        uploadedPhotoCount++;
-
-        console.log(`Uploaded ${photo.name}`);
-      } catch (photoError) {
-        console.error(
-          `Photo upload failed: ${photo.name}`,
-          photoError
-        );
-      }
-    }
-
-    console.log(
-      `Photos uploaded successfully: ${uploadedPhotoCount}`
-    );
-
-    // --------------------------------------------------
-    // EMAIL
-    // --------------------------------------------------
-
-    stage = "Sending email";
-
-    console.log("STEP 5: Sending email through Resend...");
-
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY is not configured.");
-    }
-
-    const resend = new Resend(
-      process.env.RESEND_API_KEY
-    );
-
-    const emailResult = await resend.emails.send({
+    await resend.emails.send({
       from:
         "Gary the Handyman Website <onboarding@resend.dev>",
+
       to: ["garythehandyman26@gmail.com"],
+
       replyTo: email,
+
       subject: `🔨 New Quote Request - ${name}`,
+
       html: `
 <div style="font-family:Arial,sans-serif;max-width:700px;margin:auto;">
 
@@ -205,7 +194,8 @@ New Website Quote Request
 
 <p>
 A new quote request has been submitted through
-<strong>garythehandyman.com.au</strong>.
+<strong>garythehandyman.com.au</strong>
+and has automatically been entered into ToolBox.
 </p>
 
 <hr>
@@ -214,40 +204,19 @@ A new quote request has been submitted through
 
 <table cellpadding="8">
 
-<tr>
-<td><strong>Name</strong></td>
-<td>${name}</td>
-</tr>
+<tr><td><strong>Name</strong></td><td>${name}</td></tr>
 
-<tr>
-<td><strong>Phone</strong></td>
-<td>${phone}</td>
-</tr>
+<tr><td><strong>Phone</strong></td><td>${phone}</td></tr>
 
-<tr>
-<td><strong>Email</strong></td>
-<td>${email}</td>
-</tr>
+<tr><td><strong>Email</strong></td><td>${email}</td></tr>
 
-<tr>
-<td><strong>Address</strong></td>
-<td>${address}</td>
-</tr>
+<tr><td><strong>Address</strong></td><td>${address}</td></tr>
 
-<tr>
-<td><strong>Suburb</strong></td>
-<td>${suburb}</td>
-</tr>
+<tr><td><strong>Suburb</strong></td><td>${suburb}</td></tr>
 
-<tr>
-<td><strong>State</strong></td>
-<td>${state}</td>
-</tr>
+<tr><td><strong>State</strong></td><td>${state}</td></tr>
 
-<tr>
-<td><strong>Postcode</strong></td>
-<td>${postcode}</td>
-</tr>
+<tr><td><strong>Postcode</strong></td><td>${postcode}</td></tr>
 
 </table>
 
@@ -257,76 +226,48 @@ A new quote request has been submitted through
 
 <table cellpadding="8">
 
-<tr>
-<td><strong>Service</strong></td>
-<td>${service}</td>
-</tr>
+<tr><td><strong>Service</strong></td><td>${service}</td></tr>
 
-<tr>
-<td><strong>Preferred Contact</strong></td>
-<td>${contactMethod}</td>
-</tr>
+<tr><td><strong>Preferred Contact</strong></td><td>${contactMethod}</td></tr>
 
-<tr>
-<td><strong>Preferred Inspection</strong></td>
-<td>${inspection}</td>
-</tr>
+<tr><td><strong>Preferred Inspection</strong></td><td>${inspection}</td></tr>
 
-<tr>
-<td><strong>Photos Uploaded</strong></td>
-<td>${uploadedPhotoCount}</td>
-</tr>
+<tr><td><strong>Photos Uploaded</strong></td><td>${uploadedPhotoCount}</td></tr>
 
 </table>
 
 <h2>Job Description</h2>
 
-<div style="
+<div
+style="
 background:#f5f5f5;
 padding:20px;
 border-radius:8px;
 white-space:pre-wrap;
-">
-
+"
+>
 ${message}
-
 </div>
 
 <hr>
 
 <p>
-<strong>
-ToolBox Opportunity #${opportunity.opportunity_number}
-</strong>
+
+<strong>ToolBox Opportunity #${opportunity.opportunity_number}</strong>
+
+</p>
+
+<p style="font-size:12px;color:#666;">
+Automatically created from garythehandyman.com.au
 </p>
 
 </div>
 `,
     });
 
-    if (emailResult.error) {
-      console.error(
-        "RESEND ERROR:",
-        emailResult.error
-      );
-
-      throw new Error(
-        `Resend error: ${emailResult.error.message}`
-      );
-    }
-
-    console.log(
-      "Email sent successfully:",
-      emailResult.data
-    );
-
-    // --------------------------------------------------
-    // SUCCESS
-    // --------------------------------------------------
-
-    console.log("====================================");
-    console.log("QUOTE REQUEST SUCCESS");
-    console.log("====================================");
+    // ======================================
+    // Success
+    // ======================================
 
     return Response.json({
       success: true,
@@ -335,34 +276,17 @@ ToolBox Opportunity #${opportunity.opportunity_number}
         opportunity.opportunity_number,
       uploadedPhotos: uploadedPhotoCount,
     });
-
   } catch (error) {
-
-    console.error("====================================");
-    console.error("QUOTE REQUEST FAILED");
-    console.error("FAILED STAGE:", stage);
-    console.error("ERROR:", error);
-    console.error("====================================");
-
-    let errorMessage = "Unknown server error";
-
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === "string") {
-      errorMessage = error;
-    } else {
-      try {
-        errorMessage = JSON.stringify(error);
-      } catch {
-        errorMessage = "Unknown server error";
-      }
-    }
+    console.error(
+      "Website Quote Submission Failed",
+      error
+    );
 
     return Response.json(
       {
         success: false,
-        stage,
-        error: errorMessage,
+        message:
+          "Unable to submit your quote request.",
       },
       {
         status: 500,

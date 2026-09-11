@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Private business documents - DO NOT COMMIT
+Insurance/
+Invoices/
+Quotes/
+chatas well.zip
+chatzip110926 quotefail.zip
